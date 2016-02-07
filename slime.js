@@ -2,6 +2,7 @@ $(document).ready(function () {
   canvas = document.getElementById("game");
   context = canvas.getContext("2d");
 
+  // Slime
   function Slime(x, y, color, moveLeftKeyCode, moveRightKeyCode) {
     this.x = x;
     this.y = y;
@@ -108,12 +109,32 @@ $(document).ready(function () {
     return (this.x + this.radius - 1);
   }
 
-  var slimePat = new Slime(60, 375, "pink", "KeyA", "KeyD")
+  // Ball
+
+  function Ball(x, y) {
+    this.x = x;
+    this.y = y;
+    this.radius = 12;
+  }
+
+  Ball.prototype.draw = function () {
+    context.fillStyle = "yellow";
+
+    context.beginPath();
+    context.arc(this.x, this.y, this.radius, 0, (Math.PI * 2), true);
+    context.fill();
+  }
+
+  // Setup
+
+  var slimePat = new Slime(60, 375, "pink", "KeyA", "KeyD");
+  var ball = new Ball(50, 50);
 
   requestAnimationFrame(function gameLoop() {
     context.clearRect(0, 0, canvas.width, canvas.height);
 
     slimePat.move().draw();
+    ball.draw();
 
     requestAnimationFrame(gameLoop);
   });
