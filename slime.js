@@ -5,6 +5,8 @@ $(document).ready(function () {
   function Slime(x, y, color, moveLeftKeyCode, moveRightKeyCode) {
     this.x = x;
     this.y = y;
+    this.radius = 40;
+
     this.color = color;
 
     this.moveLeftKeyCode = moveLeftKeyCode;
@@ -51,7 +53,7 @@ $(document).ready(function () {
     context.fillStyle = this.color;
 
     context.beginPath();
-    context.arc(this.x, this.y, 40, 0, Math.PI, true);
+    context.arc(this.x, this.y, this.radius, 0, Math.PI, true);
     context.fill();
   }
 
@@ -79,16 +81,34 @@ $(document).ready(function () {
   }
 
   Slime.prototype.move = function () {
-    if (this.isMoveRightKeyPressed) {
-      this.x++;
-    } else if (this.isMoveLeftKeyPressed) {
-      this.x--;
+    var speed = 5;
+
+    if (this.isMoveRightKeyPressed && !this.isOnRightBorder(speed)) {
+      this.x+= speed;
+    } else if (this.isMoveLeftKeyPressed && !this.isOnLeftBorder(speed)) {
+      this.x-= speed;
     }
 
     return this;
   }
 
-  var slimePat = new Slime(375, 375, "pink", "KeyA", "KeyD")
+  Slime.prototype.isOnRightBorder = function (speed) {
+    return ((this.rightEdge() + speed) >= canvas.width);
+  }
+
+  Slime.prototype.isOnLeftBorder = function (speed) {
+    return ((this.leftEdge() - speed) <= 0);
+  }
+
+  Slime.prototype.leftEdge = function () {
+    return (this.x - this.radius + 1);
+  }
+
+  Slime.prototype.rightEdge = function () {
+    return (this.x + this.radius - 1);
+  }
+
+  var slimePat = new Slime(60, 375, "pink", "KeyA", "KeyD")
 
   requestAnimationFrame(function gameLoop() {
     context.clearRect(0, 0, canvas.width, canvas.height);
