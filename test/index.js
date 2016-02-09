@@ -1,0 +1,1 @@
+require('./collision-detector-test');
