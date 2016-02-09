@@ -4,19 +4,19 @@ var Ball              = require('../lib/ball');
 var CollisionDetector = require('../lib/collision-detector');
 
 describe('CollisionDetector', function() {
-  function moveBallToTouchSlime(ball, slime) {
+  function moveBallToTouchTopOfSlime(ball, slime) {
     ball.y = slime.y - (slime.radius + ball.radius);
   };
 
   it('knows if collision has occured', function () {
     // Create slime and ball that aren't touching
-    var slime = new Slime(100, 300);
-    var ball  = new Ball(100, 70);
+    var slime             = new Slime(100, 300);
+    var ball              = new Ball(100, 70);
     var collisionDetector = new CollisionDetector(slime, ball);
 
     assert.isFalse(collisionDetector.isBallTouchingSlime());
 
-    moveBallToTouchSlime(ball, slime);
+    moveBallToTouchTopOfSlime(ball, slime);
 
     assert.isTrue(collisionDetector.isBallTouchingSlime());
 
@@ -27,26 +27,41 @@ describe('CollisionDetector', function() {
   });
 
   it('knows the distance between the ball and slime', function() {
-    var slime = new Slime(100, 300);
-    var ball  = new Ball(100);
+    var slime             = new Slime(100, 300);
+    var ball              = new Ball(100);
     var collisionDetector = new CollisionDetector(slime, ball);
 
-    moveBallToTouchSlime(ball, slime);
+    moveBallToTouchTopOfSlime(ball, slime);
     var expectedDistance = (ball.radius + slime.radius);
     var actualDistance = collisionDetector.distanceBetweenBallAndSlime();
 
     assert.strictEqual(actualDistance, expectedDistance);
   });
 
-  it('knows the point at which the ball and slime have collided', function() {
-    var slime = new Slime(100, 300);
-    var ball  = new Ball(100);
-    var collisionDetector = new CollisionDetector(slime, ball);
+  context('ball hits directly on top of slime', function () {
+    it('knows the point at which the ball and slime have collided', function() {
+      var slime             = new Slime(100, 300);
+      var ball              = new Ball(100);
+      var collisionDetector = new CollisionDetector(slime, ball);
 
-    moveBallToTouchSlime(ball, slime);
-    var expectedContactPoint = { x: 100, y: 260 };
-    var actualContactPoint = collisionDetector.contactPoint();
-    
-    assert.strictEqual(actualContactPoint, expectedContactPoint);
+      moveBallToTouchTopOfSlime(ball, slime);
+      var expectedContactPoint = 100;
+      var actualContactPoint   = collisionDetector.contactPointXValue();
+
+      assert.strictEqual(actualContactPoint, expectedContactPoint);
+    });
+  });
+
+  context('ball hits the side of slime', function() {
+    it('knows the point at which the ball and slime have collided', function() {
+      var slime             = new Slime(150, 375);
+      var ball              = new Ball(170, 328);
+      var collisionDetector = new CollisionDetector(slime, ball);
+
+      var expectedContactPoint = 165.6622065638907;
+      var actualContactPoint   = collisionDetector.contactPointXValue();
+
+      assert.strictEqual(actualContactPoint, expectedContactPoint);
+    });
   });
 });
