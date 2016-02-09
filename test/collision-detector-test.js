@@ -50,6 +50,19 @@ describe('CollisionDetector', function() {
 
       assert.strictEqual(actualContactPoint, expectedContactPoint);
     });
+
+    it("it updates the ball's trajectory", function () {
+      var slime             = new Slime(100, 300);
+      var ball              = new Ball(100);
+      var collisionDetector = new CollisionDetector(slime, ball);
+
+      moveBallToTouchTopOfSlime(ball, slime);
+      collisionDetector.detectCollision();
+      var expectedTrajectory = slime.x
+      var actualTrajectory   = ball.trajectory(ball.y);
+
+      assert.strictEqual(actualTrajectory, expectedTrajectory);
+    });
   });
 
   context('ball hits the side of slime', function() {
