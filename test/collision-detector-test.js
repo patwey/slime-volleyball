@@ -53,7 +53,7 @@ describe('CollisionDetector', function() {
 
     it("it updates the ball's trajectory correctly", function () {
       var slime             = new Slime(100, 300);
-      var ball              = new Ball(100);
+      var ball              = new Ball(100, 100);
       var collisionDetector = new CollisionDetector(slime, ball);
 
       moveBallToTouchTopOfSlime(ball, slime);
@@ -65,7 +65,7 @@ describe('CollisionDetector', function() {
       assert.strictEqual(actualXCoordinate, expectedXCoordinate);
 
       var oldY = ball.y;
-      debugger
+
       ball.move();
 
       var expectedXCoordinate = slime.x;
@@ -86,6 +86,38 @@ describe('CollisionDetector', function() {
       var actualContactPoint   = collisionDetector.contactPointXValue();
 
       assert.strictEqual(actualContactPoint, expectedContactPoint);
+    });
+
+    it("it moves up and to the right when it hits the right side of the slime", function () {
+      var slime             = new Slime(150, 375);
+      var ball              = new Ball(170, 328);
+      var collisionDetector = new CollisionDetector(slime, ball);
+
+      collisionDetector.detectCollision();
+
+      var oldY = ball.y;
+      var oldX = ball.x;
+
+      ball.move();
+
+      assert.isAbove(ball.x, oldX);
+      assert.isBelow(ball.y, oldY);
+    });
+
+    xit("it moves up and to the left when it hits the left side of the slime", function () {
+      var slime             = new Slime(150, 375);
+      var ball              = new Ball(130, 328);
+      var collisionDetector = new CollisionDetector(slime, ball);
+
+      collisionDetector.detectCollision();
+
+      var oldY = ball.y;
+      var oldX = ball.x;
+
+      ball.move();
+
+      assert.isBelow(ball.x, oldX);
+      assert.isBelow(ball.y, oldY);
     });
   });
 });
