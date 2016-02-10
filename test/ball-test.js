@@ -16,6 +16,11 @@ describe("Ball", function() {
     ball.x = (0 + ball.radius);
   };
 
+  function moveBallToCenterOfCanvas(ball) {
+    ball.x = (ball.canvas.width / 2);
+    ball.y = (ball.canvas.height / 2);
+  }
+
   it("has a radius of 12", function() {
     assert.equal(this.ball.radius, 12);
   });
@@ -29,9 +34,13 @@ describe("Ball", function() {
       moveBallToTouchLeftWall(this.ball);
 
       assert.isTrue(this.ball.isTouchingWall());
+
+      moveBallToCenterOfCanvas(this.ball);
+
+      assert.isFalse(this.ball.isTouchingWall());
     });
 
-    it("reverses horizontal direction", function() {
+    it("reverses horizontal direction when it hits a wall", function() {
       var oldDx = this.ball.dx;
 
       moveBallToTouchRightWall(this.ball);
@@ -46,5 +55,34 @@ describe("Ball", function() {
 
       assert.strictEqual(this.ball.dx, -oldDx);
     })
+  });
+
+  context("it hits the floor", function() {
+    function moveBallToTouchFloor(ball) {
+      ball.y = (ball.canvas.height - ball.radius);
+    }
+
+    it("knows if it hits the floor", function() {
+      moveBallToCenterOfCanvas(this.ball);
+
+      assert.isFalse(this.ball.isTouchingFloor());
+
+      moveBallToTouchFloor(this.ball);
+
+      assert.isTrue(this.ball.isTouchingFloor());
+    });
+
+    it("stops moving when it hits the floor", function() {
+      moveBallToTouchFloor(this.ball);
+      this.ball.move();
+
+      var oldX = this.ball.x;
+      var oldY = this.ball.y;
+
+      this.ball.move();
+      
+      assert.strictEqual(this.ball.x, oldX);
+      assert.strictEqual(this.ball.y, oldY);
+    });
   });
 });
