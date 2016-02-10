@@ -50,4 +50,30 @@ describe("Slime", function() {
       assert.isTrue(this.slime.isTouchingRightWall());
     });
   });
+
+  context("it can move", function() {
+    it("moves left when left key pressed", function() {
+      var oldX = this.slime.x;
+      this.slime.move();
+
+      assert.strictEqual(this.slime.x, oldX);
+
+      this.slime.keyboarder.isLeftKeyPressed = true;
+      this.slime.move();
+
+      assert.strictEqual(this.slime.x, oldX - this.slime.speed);
+    });
+
+    it("moves right when right key pressed", function() {
+      var oldX = this.slime.x;
+      this.slime.move();
+
+      assert.strictEqual(this.slime.x, oldX);
+
+      this.slime.keyboarder.isRightKeyPressed = true;
+      this.slime.move();
+
+      assert.strictEqual(this.slime.x, oldX + this.slime.speed);
+    });
+  });
 });
