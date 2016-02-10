@@ -104,7 +104,7 @@ describe('CollisionDetector', function() {
       assert.isBelow(ball.y, oldY);
     });
 
-    xit("it moves up and to the left when it hits the left side of the slime", function () {
+    it("it moves up and to the left when it hits the left side of the slime", function () {
       var slime             = new Slime(150, 375);
       var ball              = new Ball(130, 328);
       var collisionDetector = new CollisionDetector(slime, ball);
