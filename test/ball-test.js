@@ -1,5 +1,5 @@
 var assert = require('chai').assert;
-var Ball   = require('../lib/ball');
+var Ball   = require('../lib/scripts/ball');
 
 describe("Ball", function() {
   beforeEach(function() {
@@ -80,7 +80,7 @@ describe("Ball", function() {
       var oldY = this.ball.y;
 
       this.ball.move();
-      
+
       assert.strictEqual(this.ball.x, oldX);
       assert.strictEqual(this.ball.y, oldY);
     });

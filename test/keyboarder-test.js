@@ -1,6 +1,6 @@
 var assert = require('chai').assert;
-var Keyboarder  = require('../lib/keyboarder');
-var Slime  = require('../lib/slime');
+var Keyboarder  = require('../lib/scripts/keyboarder');
+var Slime  = require('../lib/scripts/slime');
 
 describe("Keyboarder", function() {
   beforeEach(function () {

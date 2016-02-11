@@ -1,7 +1,7 @@
 var assert            = require('chai').assert;
-var Slime             = require('../lib/slime');
-var Ball              = require('../lib/ball');
-var CollisionDetector = require('../lib/collision-detector');
+var Slime             = require('../lib/scripts/slime');
+var Ball              = require('../lib/scripts/ball');
+var CollisionDetector = require('../lib/scripts/collision-detector');
 
 describe('CollisionDetector', function() {
   beforeEach(function() {
