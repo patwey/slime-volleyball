@@ -6,7 +6,7 @@ var CollisionDetector = require('../lib/scripts/collision-detector');
 describe('CollisionDetector', function() {
   beforeEach(function() {
     // Create slime and ball that aren't touching
-    this.canvas = { width: 750, height: 375 };
+    this.canvas = { width: 750, height: 375, addEventListener: function(){} };
     this.ball = new Ball(100, 70, this.canvas);
 
     this.slime = new Slime(100, 300);
@@ -51,35 +51,11 @@ describe('CollisionDetector', function() {
 
   context('ball hits directly on top of slime', function () {
     it('knows the point at which the ball and slime have collided', function() {
-      var slime             = new Slime(100, 300);
-      var ball              = new Ball(100);
-      var collisionDetector = new CollisionDetector(slime, ball);
-
-      moveBallToTouchTopOfSlime(ball, slime);
+      moveBallToTouchTopOfSlime(this.ball, this.slime);
       var expectedContactPoint = 100;
-      var actualContactPoint   = collisionDetector.contactPointXValue();
+      var actualContactPoint   = this.collisionDetector.contactPointXValue();
 
       assert.strictEqual(actualContactPoint, expectedContactPoint);
-    });
-
-    it("it updates the ball's trajectory correctly", function () {
-      moveBallToTouchTopOfSlime(this.ball, this.slime);
-      this.collisionDetector.detectCollision();
-
-      var expectedXCoordinate = this.slime.x;
-      var actualXCoordinate  = this.ball.x;
-
-      assert.strictEqual(actualXCoordinate, expectedXCoordinate);
-
-      var oldY = this.ball.y;
-
-      this.ball.move();
-
-      var expectedXCoordinate = this.slime.x;
-      var actualXCoordinate  = this.ball.x;
-
-      assert.strictEqual(actualXCoordinate, expectedXCoordinate);
-      assert.strictEqual((this.ball.y - oldY), this.ball.velocity - this.ball.dy)
     });
   });
 
@@ -101,34 +77,6 @@ describe('CollisionDetector', function() {
       var actualContactPoint   = this.collisionDetector.contactPointXValue();
 
       assert.strictEqual(actualContactPoint, expectedContactPoint);
-    });
-
-    it("it moves up and to the right when it hits the right side of the slime", function () {
-      moveBallToTouchRightSideOfSlime(this.ball, this.slime);
-
-      this.collisionDetector.detectCollision();
-
-      var oldY = this.ball.y;
-      var oldX = this.ball.x;
-
-      this.ball.move();
-
-      assert.isAbove(this.ball.x, oldX);
-      assert.isBelow(this.ball.y, oldY);
-    });
-
-    it("it moves up and to the left when it hits the left side of the slime", function () {
-      moveBallToTouchLeftSideOfSlime(this.ball, this.slime);
-
-      this.collisionDetector.detectCollision();
-
-      var oldY = this.ball.y;
-      var oldX = this.ball.x;
-
-      this.ball.move();
-
-      assert.isBelow(this.ball.x, oldX);
-      assert.isBelow(this.ball.y, oldY);
     });
   });
 });

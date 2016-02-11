@@ -3,7 +3,7 @@ var Ball   = require('../lib/scripts/ball');
 
 describe("Ball", function() {
   beforeEach(function() {
-    this.canvas = { width: 750, height: 375 };
+    this.canvas = { width: 750, height: 375, addEventListener: function(){} };
     this.ball = new Ball(0, 0, this.canvas);
     this.ball.dx = 10;
   });
@@ -85,4 +85,34 @@ describe("Ball", function() {
       assert.strictEqual(this.ball.y, oldY);
     });
   });
+
+  context("it hits a slime", function() {
+    var ballSlimeCollisionEvent      = new Event("ballSlimeCollision");
+    var ballSlimeLeftCollisionEvent  = new Event("ballSlimeLeftCollision");
+    var ballSlimeRightCollisionEvent = new Event("ballSlimeRightCollision");
+
+    xit("updates its trajectory correctly when it hits the left side of a slime", function (done) {
+      document.dispatchEvent(ballSlimeCollisionEvent);
+      document.dispatchEvent(ballSlimeLeftCollisionEvent);
+
+      setTimeout(function() {}, 1000);
+
+      assert.strictEqual(this.ball.trajectorySlope, -200);
+      assert.strictEqual(this.ball.dx, -10);
+      assert.strictEqual(this.ball.velocity, -10);
+      done();
+    });
+
+    xit("updates its trajectory correctly when it hits the right side of a slime", function (done) {
+      document.dispatchEvent(ballSlimeCollisionEvent);
+      document.dispatchEvent(ballSlimeRightCollisionEvent);
+
+      setTimeout(function() {}.bind(this), 1000);
+
+      assert.strictEqual(this.ball.trajectorySlope, 200);
+      assert.strictEqual(this.ball.dx, -10);
+      assert.strictEqual(this.ball.velocity, -10);
+      done();
+    });
+  })
 });

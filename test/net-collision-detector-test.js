@@ -6,7 +6,7 @@ var Ball  = require('../lib/scripts/ball');
 describe("Net Collision Detector", function(){
   context("the ball is touching the net", function (){
     beforeEach(function(){
-      var canvas = { width: 750, height: 375 };
+      var canvas = { width: 750, height: 375, addEventListener: function(){} };
 
       this.net = new Net(canvas.width, canvas.height);
       this.ball = new Ball(0, 0, canvas);
