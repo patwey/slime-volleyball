@@ -6,10 +6,10 @@ var Ball  = require('../lib/scripts/ball');
 describe("Net Collision Detector", function(){
   context("the ball is touching the net", function (){
     beforeEach(function(){
-      var canvas = { width: 750, height: 375, addEventListener: function(){} };
+      this.canvas = { width: 750, height: 375, addEventListener: function(){} };
 
-      this.net = new Net(canvas.width, canvas.height);
-      this.ball = new Ball(0, 0, canvas);
+      this.net = new Net(this.canvas.width, this.canvas.height);
+      this.ball = new Ball(0, 0, this.canvas);
       this.netCollisionDetector = new NetCollisionDetector(this.net, this.ball);
     });
 
@@ -33,7 +33,7 @@ describe("Net Collision Detector", function(){
       assert.isFalse(this.netCollisionDetector.isBallTouchingSideOfNet());
 
       moveBallToTouchLeftSideOfNet(this.net, this.ball);
-
+      
       assert.isTrue(this.netCollisionDetector.isBallTouchingSideOfNet());
 
       moveBallToTouchRightSideOfNet(this.net, this.ball);
@@ -41,7 +41,7 @@ describe("Net Collision Detector", function(){
       assert.isTrue(this.netCollisionDetector.isBallTouchingSideOfNet());
     });
 
-    it("knows if the ball is touching the top of the net", function() {
+    xit("knows if the ball is touching the top of the net", function() {
 
     });
   })

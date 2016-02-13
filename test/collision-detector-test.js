@@ -8,7 +8,7 @@ describe('CollisionDetector', function() {
     // Create slime and ball that aren't touching
     this.canvas = { width: 750, height: 375, addEventListener: function(){} };
     this.ball = new Ball(100, 70, this.canvas);
-
+    
     this.slime = new Slime(100, 300);
     this.collisionDetector = new CollisionDetector(this.slime, this.ball);
   });
