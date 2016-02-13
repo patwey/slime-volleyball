@@ -27,22 +27,37 @@ describe("Net Collision Detector", function(){
       ball.x = net.x + ball.radius + net.width;
     }
 
-    it("knows if the ball is touching the side of the net", function (){
+    function moveBallToTouchTopOfNet(net, ball){
+      ball.x = net.x + 1;
+      ball.y = net.y - ball.radius;
+    }
+
+    it("knows if the ball is not touching the side of the net", function (){
       moveBallToNotTouchNet(this.net, this.ball);
 
       assert.isFalse(this.netCollisionDetector.isBallTouchingSideOfNet());
+    });
 
-      moveBallToTouchLeftSideOfNet(this.net, this.ball);
-      
-      assert.isTrue(this.netCollisionDetector.isBallTouchingSideOfNet());
-
+    it("knows if the ball is touching the right side of the net", function (){
       moveBallToTouchRightSideOfNet(this.net, this.ball);
 
       assert.isTrue(this.netCollisionDetector.isBallTouchingSideOfNet());
     });
 
-    xit("knows if the ball is touching the top of the net", function() {
+    it("knows if the ball is touching the left side of the net", function (){
+      moveBallToTouchLeftSideOfNet(this.net, this.ball);
 
+      assert.isTrue(this.netCollisionDetector.isBallTouchingSideOfNet());
+    });
+
+    it("knows if the ball is touching the top of the net", function() {
+      moveBallToNotTouchNet(this.net, this.ball);
+
+      assert.isFalse(this.netCollisionDetector.isBallTouchingTopOfNet());
+
+      moveBallToTouchTopOfNet(this.net, this.ball);
+
+      assert.isTrue(this.netCollisionDetector.isBallTouchingTopOfNet());
     });
   })
 })
