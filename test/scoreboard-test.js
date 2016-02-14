@@ -3,7 +3,7 @@ var Scoreboard  = require('../lib/scripts/scoreboard');
 
 describe("Scoreboard", function () {
   beforeEach(function () {
-    var canvas = { width: 750, height: 375, addEventListener: function () {} }
+    var canvas = { width: 750, height: 375, addEventListener: function () {}, dispatchEvent: function () {} }
     this.scoreboard = new Scoreboard(canvas);
   });
 
@@ -21,5 +21,15 @@ describe("Scoreboard", function () {
     this.scoreboard.increaseRightSlimeScore();
 
     assert.strictEqual(this.scoreboard.rightSlimeScore, oldScore + 1);
+  });
+
+  it("knows if there is a winner", function () {
+    this.scoreboard.rightSlimeScore = 6;
+
+    assert.isFalse(this.scoreboard.isWinner(this.scoreboard.rightSlimeScore));
+
+    this.scoreboard.increaseRightSlimeScore();
+
+    assert.isTrue(this.scoreboard.isWinner(this.scoreboard.rightSlimeScore));
   });
 });
