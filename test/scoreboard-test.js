@@ -3,7 +3,8 @@ var Scoreboard  = require('../lib/scripts/scoreboard');
 
 describe("Scoreboard", function () {
   beforeEach(function () {
-    this.scoreboard = new Scoreboard();
+    var canvas = { width: 750, height: 375, addEventListener: function () {} }
+    this.scoreboard = new Scoreboard(canvas);
   });
 
   it("updates left slime's score", function () {

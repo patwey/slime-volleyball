@@ -3,7 +3,7 @@ var Ball   = require('../lib/scripts/ball');
 
 describe("Ball", function() {
   beforeEach(function() {
-    this.canvas = { width: 750, height: 375, addEventListener: function(){} };
+    this.canvas = { width: 750, height: 375, addEventListener: function(){}, dispatchEvent: function(){} };
     this.ball = new Ball(0, 0, this.canvas);
     this.ball.dx = 10;
   });

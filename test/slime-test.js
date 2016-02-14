@@ -104,7 +104,6 @@ describe("Slime", function() {
   context("it can move", function() {
     it("moves left when left key pressed", function() {
       moveSlimeAwayFromWalls(this.slime);
-      debugger
 
       var oldX = this.slime.x;
       this.slime.move();
