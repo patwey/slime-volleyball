@@ -4,3 +4,34 @@
   height: 375px;
   margin: auto;
 }
+
+.key {
+  border-radius: 5px;
+  padding: 3px;
+  padding-left: 11px;
+  padding-right: 11px;
+}
+
+.pat-key {
+  background-color: deeppink;
+  color: white;
+  border: 1px solid deeppink;
+}
+
+.torie-key {
+  background-color: dodgerblue;
+  color: white;
+  border: 1px solid dodgerblue;
+}
+
+.pat {
+  color: deeppink;
+}
+
+.torie {
+  color: dodgerblue;
+}
+
+.slime {
+  color: darkslategrey;
+}

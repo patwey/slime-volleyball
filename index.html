@@ -6,56 +6,57 @@
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
 </head>
 <body>
+  <h1 class="text-center">Slime Volleyball</h1>
   <div id="game-div">
     <canvas id="game" width="750" height="375"></canvas>
   </div>
 
   <div class="container">
     <div class="row">
-      <div class="col-md-3 col-md-offset-2 text-center">
-        <h3>Pat</h3>
+      <div class="col-md-3 col-md-offset-2">
+        <h4>Slime<span class="pat">Pat</span></h4>
+        <br>
 
         <div class="row">
-          <div class="col-md-12 text-center">
-            <p><strong>W</strong></p>
+          <div class="col-md-1 col-md-offset-1">
+            <p><strong class="key pat-key letter-key">W</strong></p>
           </div>
         </div>
 
         <div class="row">
-          <div class="col-md-6 text-center">
-            <p><strong>A</strong></p>
+          <div class="col-md-1">
+            <p><strong class="key pat-key letter-key">A</strong></p>
           </div>
 
-          <div class="col-md-6 text-center">
-            <p><strong>D</strong></p>
+          <div class="col-md-1 col-md-offset-1">
+            <p><strong class="key pat-key letter-key">D</strong></p>
           </div>
         </div>
 
       </div>
 
-      <div class="col-md-3 col-md-offset-2 text-center">
-
-        <h3>Torie</h3>
+      <div class="col-md-3 col-md-offset-2 text-right">
+        <h4>Slime<span class="torie">Torie</span></h4>
+        <br>
 
         <div class="row">
-          <div class="col-md-12 text-center">
-            <p><span class="glyphicon glyphicon-arrow-up"></span></p>
+          <div class="col-md-1 col-md-offset-8">
+            <p><span class="key torie-key glyphicon glyphicon-arrow-up"></span></p>
           </div>
         </div>
 
         <div class="row">
-          <div class="col-md-6 text-center">
-            <p><span class="glyphicon glyphicon-arrow-left"></span></p>
+          <div class="col-md-1 col-md-offset-7">
+            <p><span class="key torie-key glyphicon glyphicon-arrow-left"></span></p>
           </div>
 
-          <div class="col-md-6 text-center">
-            <p><span class="glyphicon glyphicon-arrow-right"></span></p>
+          <div class="col-md-1 col-md-offset-1">
+            <p><span class="key torie-key glyphicon glyphicon-arrow-right"></span></p>
           </div>
         </div>
       </div>
     </div>
   </div>
-
   <script src="main.bundle.js"></script>
 </body>
 </html>
