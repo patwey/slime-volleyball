@@ -9,7 +9,7 @@ describe("Slime", function() {
 
   beforeEach(function() {
     var canvas = { width: 750, height: 375 };
-    this.slime = new Slime(100, 375, "blue", "keyA", "keyD", "", canvas, true);
+    this.slime = new Slime(100, 375, "blue", "keyA", "keyD", "keyW", "", canvas, true);
     this.net   = new Net(canvas.width, canvas.height);
   });
 
@@ -38,7 +38,7 @@ describe("Slime", function() {
 
     beforeEach(function () {
       var canvas = { width: 750, height: 375 };
-      this.leftSlime = new Slime(100, 375, "blue", "keyA", "keyD", "", canvas, true)
+      this.leftSlime = new Slime(100, 375, "blue", "keyA", "keyD", "keyW", "", canvas, true)
     })
 
     it("knows if its touching the left wall", function() {
@@ -77,7 +77,7 @@ describe("Slime", function() {
 
     beforeEach(function () {
       var canvas = { width: 750, height: 375 };
-      this.rightSlime = new Slime(600, 375, "blue", "keyA", "keyD", "", canvas, false)
+      this.rightSlime = new Slime(600, 375, "blue", "keyA", "keyD", "keyW", "", canvas, false)
     })
 
     it("knows if its touching the right wall", function() {
@@ -127,5 +127,19 @@ describe("Slime", function() {
 
       assert.strictEqual(this.slime.x, oldX + this.slime.speed);
     });
+  });
+
+  context("it can jump", function () {
+    it("jumps when jump key pressed", function () {
+      var oldY = this.slime.y;
+      this.slime.move();
+
+      assert.strictEqual(this.slime.y, oldY);
+
+      this.slime.keyboarder.isJumpKeyPressed = true;
+      this.slime.move();
+
+      assert.strictEqual(this.slime.y, oldY + this.slime.initialJumpForce);
+    })
   });
 });
