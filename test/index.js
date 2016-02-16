@@ -4,3 +4,4 @@ require('./slime-test');
 require('./ball-test');
 require('./keyboarder-test');
 require('./scoreboard-test');
+require('./net-test');
