@@ -47,7 +47,7 @@
 	"use strict";
 
 	var Game = __webpack_require__(1);
-	__webpack_require__(5);
+	__webpack_require__(9);
 
 	var game = new Game();
 	game.start();
@@ -59,145 +59,332 @@
 	'use strict';
 
 	var Slime = __webpack_require__(2);
-	var Ball = __webpack_require__(3);
-	var CollisionDetector = __webpack_require__(4);
+	var Ball = __webpack_require__(4);
+	var Net = __webpack_require__(5);
+	var CollisionDetector = __webpack_require__(6);
+	var netCollisionDetector = __webpack_require__(7);
+	var Scoreboard = __webpack_require__(8);
 
-	function Game() {};
+	function Game() {
+	  this.setCanvasAndContext();
+	  this.setUpNewGame();
+	};
 
-	Game.prototype.start = function () {
-	  var canvas = document.getElementById("game");
-	  var context = canvas.getContext("2d");
+	Game.prototype = {
+	  start: function start() {
+	    requestAnimationFrame((function gameLoop() {
+	      this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-	  var slimePat = new Slime(150, 375, "deeppink", "KeyA", "KeyD", context, canvas);
-	  var ball = new Ball(slimePat.x, 250, context);
-	  var collisionDetector = new CollisionDetector(slimePat, ball, context);
+	      this.move();
+	      this.draw();
+	      this.detectCollisions();
 
-	  requestAnimationFrame(function gameLoop() {
-	    context.clearRect(0, 0, canvas.width, canvas.height);
+	      if (this.gameOver) {
+	        this.endGame();
+	      } else {
+	        requestAnimationFrame(gameLoop.bind(this));
+	      }
+	    }).bind(this));
+	  },
 
-	    slimePat.move().draw();
-	    ball.move().draw();
-	    collisionDetector.detectCollision();
+	  addEventListeners: function addEventListeners() {
+	    this.canvas.addEventListener("ballHitLeftSideOfFloor", (function (e) {
+	      this.setUpNewPoint("left");
+	    }).bind(this), false);
+	    this.canvas.addEventListener("ballHitRightSideOfFloor", (function (e) {
+	      this.setUpNewPoint("right");
+	    }).bind(this), false);
+	    this.canvas.addEventListener("rightSlimeWins", (function (e) {
+	      this.endGameWithWinner("right");
+	    }).bind(this), false);
+	    this.canvas.addEventListener("leftSlimeWins", (function (e) {
+	      this.endGameWithWinner("left");
+	    }).bind(this), false);
+	  },
 
-	    requestAnimationFrame(gameLoop);
-	  });
+	  setCanvasAndContext: function setCanvasAndContext() {
+	    this.canvas = document.getElementById("game");
+	    this.context = this.canvas.getContext("2d");
+	  },
+
+	  draw: function draw() {
+	    this.slimes.forEach(function (slime) {
+	      slime.draw();
+	    });
+
+	    this.ball.draw(this.context);
+	    this.net.draw(this.context);
+	    this.scoreboard.draw(this.context);
+	  },
+
+	  move: function move() {
+	    this.slimes.forEach(function (slime) {
+	      slime.move();
+	    });
+
+	    this.ball.move();
+	  },
+
+	  detectCollisions: function detectCollisions() {
+	    this.collisionDetectors.forEach((function (detector) {
+	      detector.detectCollision(this.canvas);
+	    }).bind(this));
+	  },
+
+	  createSlimes: function createSlimes() {
+	    var slimes = [];
+
+	    slimes.push(new Slime(150, 375, "deeppink", "KeyA", "KeyD", "KeyW", this.context, this.canvas, true));
+	    slimes.push(new Slime(600, 375, "dodgerblue", "ArrowLeft", "ArrowRight", "ArrowUp", this.context, this.canvas, false));
+
+	    return slimes;
+	  },
+
+	  createCollisionDetectors: function createCollisionDetectors() {
+	    var collisionDetectors = this.slimes.map((function (slime) {
+	      return new CollisionDetector(slime, this.ball);
+	    }).bind(this));
+
+	    collisionDetectors.push(new netCollisionDetector(this.net, this.ball));
+	    return collisionDetectors;
+	  },
+
+	  setUpNewPoint: function setUpNewPoint(side) {
+	    setTimeout((function () {
+	      this.resetPoint(side);
+	    }).bind(this), 1000);
+	  },
+
+	  resetPoint: function resetPoint(side) {
+	    this.slimes = this.createSlimes(this.context, this.canvas);
+
+	    if (side == "left") {
+	      var ballX = this.slimes[1].x;
+	    } else if (side == "right") {
+	      var ballX = this.slimes[0].x;
+	    }
+
+	    this.ball = new Ball(ballX, 250, this.canvas);
+	    this.collisionDetectors = this.createCollisionDetectors();
+	  },
+
+	  setUpNewGame: function setUpNewGame() {
+	    this.gameOver = false;
+	    this.slimes = this.createSlimes(this.context, this.canvas);
+
+	    this.ball = new Ball(this.slimes[0].x, 250, this.canvas);
+	    this.net = new Net(this.canvas.width, this.canvas.height);
+	    this.scoreboard = new Scoreboard(this.canvas);
+	    this.collisionDetectors = this.createCollisionDetectors();
+
+	    this.addEventListeners();
+	  },
+
+	  endGameWithWinner: function endGameWithWinner(side) {
+	    this.gameOver = true;
+
+	    if (side == "right") {
+	      this.winner = "SlimeTorie";
+	    } else if (side == "left") {
+	      this.winner = "SlimePat";
+	    }
+	  },
+
+	  endGame: function endGame() {
+	    this.removeAllEventListeners();
+	    this.drawGameOverScreen();
+	  },
+
+	  removeAllEventListeners: function removeAllEventListeners() {
+	    var oldCanvas = document.getElementById("game");
+	    var newCanvas = oldCanvas.cloneNode(true);
+
+	    oldCanvas.parentNode.replaceChild(newCanvas, oldCanvas);
+
+	    this.setCanvasAndContext();
+	  },
+
+	  drawGameOverScreen: function drawGameOverScreen() {
+	    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+	    this.context.font = "48px sans-serif";
+	    this.context.textAlign = "center";
+	    this.context.fillStyle = "lightgrey";
+	    this.context.fillText(this.winner + " wins!", this.canvas.width / 2, this.canvas.height / 2);
+
+	    this.context.font = "18px sans-serif";
+	    this.context.fillText("Press space to play again", this.canvas.width / 2, this.canvas.height / 2 + 40);
+
+	    this.newGameHandler = (function (e) {
+	      this.restartGame(e);
+	    }).bind(this);
+	    window.addEventListener("keydown", this.newGameHandler, false);
+	  },
+
+	  restartGame: function restartGame(e) {
+	    if (e.code === "Space") {
+	      e.view.removeEventListener("keydown", this.newGameHandler, false);
+	      this.setUpNewGame();
+	      this.start();
+	    }
+	  }
 	};
 
 	module.exports = Game;
 
 /***/ },
 /* 2 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
-	function Slime(x, y, color, moveLeftKeyCode, moveRightKeyCode, context, canvas) {
+	var Keyboarder = __webpack_require__(3);
+
+	function Slime(x, y, color, moveLeftKeyCode, moveRightKeyCode, jumpKeyCode, context, canvas, isOnLeftSide) {
 	  this.x = x;
 	  this.y = y;
+
+	  this.dy = 0;
+	  this.isJumping = false;
+	  this.initialJumpForce = -10;
+
 	  this.radius = 40;
 
 	  this.color = color;
 
 	  this.moveLeftKeyCode = moveLeftKeyCode;
 	  this.moveRightKeyCode = moveRightKeyCode;
-
-	  this.isMoveLeftKeyPressed = false;
-	  this.isMoveRightKeyPressed = false;
+	  this.jumpKeyCode = jumpKeyCode;
 
 	  this.context = context;
 	  this.canvas = canvas;
 
-	  createEventListener(this);
+	  this.isOnLeftSide = isOnLeftSide;
+
+	  this.speed = 7;
+	  this.keyboarder = new Keyboarder(this, moveLeftKeyCode, moveRightKeyCode, jumpKeyCode);
 	}
 
-	function createEventListener(slime) {
-	  window.addEventListener("keydown", onKeyDown.bind(slime), false);
-	  window.addEventListener("keyup", onKeyUp.bind(slime), false);
-	}
+	Slime.prototype = {
+	  draw: function draw() {
+	    this.drawBody();
+	    if (this.isOnLeftSide) {
+	      this.drawLeftEye();
+	    } else if (!this.isOnLeftSide) {
+	      this.drawRightEye();
+	    }
+	  },
 
-	function onKeyDown(e) {
-	  var keyPressed = e.code;
+	  drawBody: function drawBody() {
+	    this.context.fillStyle = this.color;
 
-	  switch (keyPressed) {
-	    case this.moveLeftKeyCode:
-	      this.isMoveLeftKeyPressed = true;
-	      break;
-	    case this.moveRightKeyCode:
-	      this.isMoveRightKeyPressed = true;
-	      break;
+	    this.context.beginPath();
+	    this.context.arc(this.x, this.y, this.radius, 0, Math.PI, true);
+	    this.context.fill();
+	  },
+
+	  drawLeftEye: function drawLeftEye() {
+	    this.context.fillStyle = "white";
+
+	    this.context.beginPath();
+	    this.context.arc(this.x + 18, this.y - 20, 9, 0, Math.PI * 2, true);
+	    this.context.fill();
+
+	    this.drawLeftPupil();
+	  },
+
+	  drawRightEye: function drawRightEye() {
+	    this.context.fillStyle = "white";
+
+	    this.context.beginPath();
+	    this.context.arc(this.x - 18, this.y - 20, 9, 0, Math.PI * 2, true);
+	    this.context.fill();
+
+	    this.drawRightPupil();
+	  },
+
+	  drawLeftPupil: function drawLeftPupil() {
+	    this.context.fillStyle = "black";
+
+	    this.context.beginPath();
+	    this.context.arc(this.x + 22, this.y - 20, 4, 0, Math.PI * 2, true);
+	    this.context.fill();
+	  },
+
+	  drawRightPupil: function drawRightPupil() {
+	    this.context.fillStyle = "black";
+
+	    this.context.beginPath();
+	    this.context.arc(this.x - 22, this.y - 20, 4, 0, Math.PI * 2, true);
+	    this.context.fill();
+	  },
+
+	  move: function move() {
+	    if (this.shouldMoveRight()) {
+	      this.x += this.speed;
+	    } else if (this.shouldMoveLeft()) {
+	      this.x -= this.speed;
+	    }
+
+	    if (this.shouldJump()) {
+	      this.jump();
+	    }
+	    if (this.isJumping) {
+	      this.continueJump();
+	    }
+
+	    return this;
+	  },
+
+	  shouldMoveRight: function shouldMoveRight() {
+	    return this.keyboarder.isRightKeyPressed && !this.isTouchingRightWall() && !this.isTouchingLeftSideOfNet();
+	  },
+
+	  shouldMoveLeft: function shouldMoveLeft() {
+	    return this.keyboarder.isLeftKeyPressed && !this.isTouchingLeftWall() && !this.isTouchingRightSideOfNet();
+	  },
+
+	  shouldJump: function shouldJump() {
+	    return !this.isJumping && this.keyboarder.isJumpKeyPressed;
+	  },
+
+	  jump: function jump() {
+	    this.isJumping = true;
+	    this.dy = this.initialJumpForce;
+	  },
+
+	  continueJump: function continueJump() {
+	    if (this.y + this.dy <= 375) {
+	      this.y += this.dy;
+	      this.dy += 0.55;
+	    } else {
+	      this.isJumping = false;
+	      this.y = 375;
+	    }
+	  },
+
+	  isTouchingRightWall: function isTouchingRightWall() {
+	    return this.rightEdge() + this.speed - 1 >= this.canvas.width;
+	  },
+
+	  isTouchingLeftWall: function isTouchingLeftWall() {
+	    return this.leftEdge() - this.speed + 1 <= 0;
+	  },
+
+	  leftEdge: function leftEdge() {
+	    return this.x - this.radius;
+	  },
+
+	  rightEdge: function rightEdge() {
+	    return this.x + this.radius;
+	  },
+
+	  isTouchingLeftSideOfNet: function isTouchingLeftSideOfNet() {
+	    return this.isOnLeftSide && this.rightEdge() + this.speed >= this.canvas.width / 2 - 4;
+	  },
+
+	  isTouchingRightSideOfNet: function isTouchingRightSideOfNet() {
+	    return !this.isOnLeftSide && this.leftEdge() - this.speed <= this.canvas.width / 2 + 4;
 	  }
-	}
-
-	function onKeyUp(e) {
-	  var keyReleased = e.code;
-
-	  switch (keyReleased) {
-	    case this.moveLeftKeyCode:
-	      this.isMoveLeftKeyPressed = false;
-	      break;
-	    case this.moveRightKeyCode:
-	      this.isMoveRightKeyPressed = false;
-	      break;
-	  }
-	}
-
-	Slime.prototype.drawBody = function () {
-	  this.context.fillStyle = this.color;
-
-	  this.context.beginPath();
-	  this.context.arc(this.x, this.y, this.radius, 0, Math.PI, true);
-	  this.context.fill();
-	};
-
-	Slime.prototype.drawPupil = function () {
-	  this.context.fillStyle = "black";
-
-	  this.context.beginPath();
-	  this.context.arc(this.x + 22, this.y - 20, 4, 0, Math.PI * 2, true);
-	  this.context.fill();
-	};
-
-	Slime.prototype.drawEye = function () {
-	  this.context.fillStyle = "white";
-
-	  this.context.beginPath();
-	  this.context.arc(this.x + 18, this.y - 20, 9, 0, Math.PI * 2, true);
-	  this.context.fill();
-
-	  this.drawPupil();
-	};
-
-	Slime.prototype.draw = function () {
-	  this.drawBody();
-	  this.drawEye();
-	};
-
-	Slime.prototype.move = function () {
-	  var speed = 5;
-
-	  if (this.isMoveRightKeyPressed && !this.isOnRightBorder(speed)) {
-	    this.x += speed;
-	  } else if (this.isMoveLeftKeyPressed && !this.isOnLeftBorder(speed)) {
-	    this.x -= speed;
-	  }
-
-	  return this;
-	};
-
-	Slime.prototype.isOnRightBorder = function (speed) {
-	  return this.rightEdge() + speed - 1 >= this.canvas.width;
-	};
-
-	Slime.prototype.isOnLeftBorder = function (speed) {
-	  return this.leftEdge() - speed + 1 <= 0;
-	};
-
-	Slime.prototype.leftEdge = function () {
-	  return this.x - this.radius;
-	};
-
-	Slime.prototype.rightEdge = function () {
-	  return this.x + this.radius;
 	};
 
 	module.exports = Slime;
@@ -208,40 +395,56 @@
 
 	"use strict";
 
-	function Ball(x, y, context) {
-	  this.x = x;
-	  this.y = y;
+	function Keyboarder(slime, leftKeyCode, rightKeyCode, jumpKeyCode) {
+	  this.leftKeyCode = leftKeyCode;
+	  this.rightKeyCode = rightKeyCode;
+	  this.jumpKeyCode = jumpKeyCode;
 
-	  this.dx = 0;
-	  this.dy = 3;
+	  this.isLeftKeyPressed = false;
+	  this.isRightKeyPressed = false;
+	  this.isJumpKeyPressed = false;
 
-	  this.frameCount = 0;
-	  this.radius = 12;
-
-	  this.context = context;
+	  createKeyEventListeners(this);
 	}
 
-	Ball.prototype.draw = function () {
-	  this.context.fillStyle = "yellow";
+	function createKeyEventListeners(keyboarder) {
+	  window.addEventListener("keydown", onKeyDown.bind(keyboarder), false);
+	  window.addEventListener("keyup", onKeyUp.bind(keyboarder), false);
+	}
 
-	  this.context.beginPath();
-	  this.context.arc(this.x, this.y, this.radius, 0, Math.PI * 2, true);
-	  this.context.fill();
-	};
+	function onKeyDown(e) {
+	  var keyPressed = e.code;
 
-	Ball.prototype.move = function () {
-	  if (this.frameCount == 30) {
-	    this.dy = -this.dy;
+	  switch (keyPressed) {
+	    case this.leftKeyCode:
+	      this.isLeftKeyPressed = true;
+	      break;
+	    case this.rightKeyCode:
+	      this.isRightKeyPressed = true;
+	      break;
+	    case this.jumpKeyCode:
+	      this.isJumpKeyPressed = true;
+	      break;
 	  }
-	  this.x += this.dx;
-	  this.y += this.dy;
+	}
 
-	  this.frameCount += 1;
+	function onKeyUp(e) {
+	  var keyReleased = e.code;
 
-	  return this;
-	};
+	  switch (keyReleased) {
+	    case this.leftKeyCode:
+	      this.isLeftKeyPressed = false;
+	      break;
+	    case this.rightKeyCode:
+	      this.isRightKeyPressed = false;
+	      break;
+	    case this.jumpKeyCode:
+	      this.isJumpKeyPressed = false;
+	      break;
+	  }
+	}
 
-	module.exports = Ball;
+	module.exports = Keyboarder;
 
 /***/ },
 /* 4 */
@@ -249,52 +452,443 @@
 
 	"use strict";
 
-	function CollisionDetector(slime, ball, context) {
-	  this.slime = slime;
-	  this.ball = ball;
+	function Ball(x, y, canvas) {
+	  this.x = x;
+	  this.y = y;
 
-	  this.context = context;
+	  this.velocity = 0;
+	  this.dx = 0;
+	  this.dy = 0.5;
+
+	  this.frameCount = 0;
+	  this.radius = 12;
+
+	  this.canvas = canvas;
+
+	  this.trajectorySlope = 1;
+	  this.trajectoryIntercept = y;
+
+	  this.createEventListeners();
+
+	  this.hitLeftSideOfFloor = new Event("ballHitLeftSideOfFloor");
+	  this.hitRightSideOfFloor = new Event("ballHitRightSideOfFloor");
 	}
 
-	CollisionDetector.prototype.isBallTouchingSlime = function () {
-	  var distance = this.distanceBetweenBallAndSlime();
+	Ball.prototype = {
+	  createEventListeners: function createEventListeners() {
+	    this.canvas.addEventListener("ballSlimeCollision", (function (e) {
+	      this.redirect(e.side, e.contactPoint, e.slimeForce);
+	    }).bind(this), false);
+	    this.canvas.addEventListener("ballNetSideCollision", (function (e) {
+	      this.reverseDirection();
+	    }).bind(this), false);
+	    this.canvas.addEventListener("ballNetTopCollision", (function (e) {
+	      this.resetVelocity();
+	    }).bind(this), false);
+	  },
 
-	  if (distance <= this.slime.radius + this.ball.radius) {
-	    return true;
-	  } else {
-	    return false;
+	  draw: function draw(context) {
+	    context.fillStyle = "yellow";
+
+	    context.beginPath();
+	    context.arc(this.x, this.y, this.radius, 0, Math.PI * 2, true);
+	    context.fill();
+	  },
+
+	  move: function move() {
+	    this.stopIfOnFloor();
+	    this.setTrajectoryInterceptToY();
+	    this.x += this.dx;
+	    this.y += this.trajectory(this.trajectorySlope, this.trajectoryIntercept) + this.velocity;
+
+	    this.velocity += this.dy;
+	    this.changeDirectionIfOnWall();
+	    return this;
+	  },
+
+	  trajectory: function trajectory(m, b) {
+	    return (this.y - b) / m;
+	  },
+
+	  setTrajectoryInterceptToY: function setTrajectoryInterceptToY() {
+	    if (this.dx === 0) {
+	      this.updateTrajectoryIntercept(this.y);
+	    }
+	  },
+
+	  updateVelocity: function updateVelocity(velocity) {
+	    this.velocity = velocity;
+	  },
+
+	  updateDx: function updateDx(dx) {
+	    this.dx = dx;
+	  },
+
+	  updateTrajectorySlope: function updateTrajectorySlope(trajectorySlope) {
+	    this.trajectorySlope = trajectorySlope;
+	  },
+
+	  updateTrajectoryIntercept: function updateTrajectoryIntercept(trajectoryIntercept) {
+	    this.trajectoryIntercept = trajectoryIntercept;
+	  },
+
+	  changeDirectionIfOnWall: function changeDirectionIfOnWall() {
+	    if (this.isTouchingWall()) {
+	      this.reverseDirection();
+	    }
+	  },
+
+	  reverseDirection: function reverseDirection() {
+	    this.dx = -this.dx;
+	  },
+
+	  isTouchingWall: function isTouchingWall() {
+	    return this.isTouchingLeftWall() || this.isTouchingRightWall();
+	  },
+
+	  isTouchingLeftWall: function isTouchingLeftWall() {
+	    return this.x - this.radius <= 0;
+	  },
+
+	  isTouchingRightWall: function isTouchingRightWall() {
+	    return this.x + this.radius >= this.canvas.width;
+	  },
+
+	  stopIfOnFloor: function stopIfOnFloor() {
+	    if (this.isTouchingFloor()) {
+	      this.emitFloorContactEvent();
+	      this.stopBall();
+	    }
+	  },
+
+	  stopBall: function stopBall() {
+	    this.dx = 0;
+	    this.dy = 0;
+	    this.velocity = 0;
+	  },
+
+	  isTouchingFloor: function isTouchingFloor() {
+	    return this.y + this.radius >= this.canvas.height;
+	  },
+
+	  emitFloorContactEvent: function emitFloorContactEvent() {
+	    if (this.isOnLeftSide()) {
+	      this.canvas.dispatchEvent(this.hitLeftSideOfFloor);
+	    } else if (this.isOnRightSide()) {
+	      this.canvas.dispatchEvent(this.hitRightSideOfFloor);
+	    }
+	    this.nullifyEvents();
+	  },
+
+	  nullifyEvents: function nullifyEvents() {
+	    var event = new Event("null");
+	    this.hitLeftSideOfFloor = event;
+	    this.hitRightSideOfFloor = event;
+	  },
+
+	  isOnLeftSide: function isOnLeftSide() {
+	    return this.x < this.canvas.width / 2;
+	  },
+
+	  isOnRightSide: function isOnRightSide() {
+	    return this.x > this.canvas.width / 2;
+	  },
+
+	  redirect: function redirect(side, contactPoint, slimeForce) {
+	    this.resetVelocity();
+	    if (side === "left") {
+	      this.redirectLeft(contactPoint, slimeForce);
+	    } else if (side === "right") {
+	      this.redirectRight(contactPoint, slimeForce);
+	    }
+	  },
+
+	  redirectRight: function redirectRight(contactPoint, slimeForce) {
+	    this.updateDx(8 + -slimeForce * 0.15);
+	    this.updateTrajectorySlope(-200);
+	    this.updateTrajectoryIntercept(200 + 12 * contactPoint);
+	  },
+
+	  redirectLeft: function redirectLeft(contactPoint, slimeForce) {
+	    this.updateDx(-8 + slimeForce * 0.15);
+	    this.updateTrajectorySlope(200);
+	    this.updateTrajectoryIntercept(300 + 12 * contactPoint);
+	  },
+
+	  resetVelocity: function resetVelocity() {
+	    this.updateVelocity(-10);
+	  },
+
+	  rightEdge: function rightEdge() {
+	    return this.x + this.radius;
+	  },
+
+	  leftEdge: function leftEdge() {
+	    return this.x - this.radius;
+	  },
+
+	  bottomEdge: function bottomEdge() {
+	    return this.y + this.radius;
 	  }
 	};
 
-	CollisionDetector.prototype.distanceBetweenBallAndSlime = function () {
-	  var squareOfDifferenceInX = Math.pow(this.slime.x - this.ball.x, 2);
-	  var squareOfDifferenceInY = Math.pow(this.slime.y - this.ball.y, 2);
+	module.exports = Ball;
 
-	  return Math.sqrt(squareOfDifferenceInX + squareOfDifferenceInY);
+/***/ },
+/* 5 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	function Net(canvasWidth, canvasHeight) {
+	  this.width = 8;
+	  this.height = 45;
+
+	  this.x = canvasWidth / 2 - this.width / 2;
+	  this.y = canvasHeight - this.height;
+	}
+
+	Net.prototype = {
+	  draw: function draw(context) {
+	    context.fillStyle = "lightgrey";
+	    context.fillRect(this.x, this.y, this.width, this.height);
+	  },
+
+	  rightEdge: function rightEdge() {
+	    return this.x + this.width;
+	  },
+
+	  lefttEdge: function lefttEdge() {
+	    return this.x;
+	  }
 	};
 
-	CollisionDetector.prototype.contactPoint = function () {};
+	module.exports = Net;
+
+/***/ },
+/* 6 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	function CollisionDetector(slime, ball) {
+	  this.slime = slime;
+	  this.ball = ball;
+	  this.ballSlimeCollisionEvent = new Event("ballSlimeCollision");
+	}
+
+	CollisionDetector.prototype = {
+	  detectCollision: function detectCollision(canvas) {
+	    if (this.isBallTouchingSlime()) {
+	      this.emitBallEvent(canvas);
+	    }
+	  },
+
+	  emitBallEvent: function emitBallEvent(canvas) {
+	    if (this.isBallTouchingRightSideOfSlime()) {
+	      this.ballSlimeCollisionEvent.side = "right";
+	    } else if (this.isBallTouchingLeftSideOfSlime()) {
+	      this.ballSlimeCollisionEvent.side = "left";
+	    }
+
+	    this.ballSlimeCollisionEvent.contactPoint = this.contactPointXValue() - this.slime.x;
+	    this.ballSlimeCollisionEvent.slimeForce = this.slime.dy;
+	    canvas.dispatchEvent(this.ballSlimeCollisionEvent);
+	  },
+
+	  isBallTouchingRightSideOfSlime: function isBallTouchingRightSideOfSlime() {
+	    return this.contactPointXValue() > this.slime.x;
+	  },
+
+	  isBallTouchingLeftSideOfSlime: function isBallTouchingLeftSideOfSlime() {
+	    return this.contactPointXValue() < this.slime.x;
+	  },
+
+	  isBallTouchingSlime: function isBallTouchingSlime() {
+	    var distance = this.distanceBetweenBallAndSlime();
+
+	    if (distance <= this.slime.radius + this.ball.radius) {
+	      return true;
+	    } else {
+	      return false;
+	    }
+	  },
+
+	  distanceBetweenBallAndSlime: function distanceBetweenBallAndSlime() {
+	    var squareOfDifferenceInX = Math.pow(this.slime.x - this.ball.x, 2);
+	    var squareOfDifferenceInY = Math.pow(this.slime.y - this.ball.y, 2);
+
+	    return Math.sqrt(squareOfDifferenceInX + squareOfDifferenceInY);
+	  },
+
+	  contactPointXValue: function contactPointXValue() {
+	    if (this.slime.x == this.ball.x) {
+	      return this.slime.x;
+	    } else {
+	      var slope = this.slopeOfLineBetweenBallAndSlime();
+	      var intercept = this.interceptOfLineBetweenBallAndSlime(slope);
+
+	      return this.solveForContactPointXValue(intercept, slope);
+	    }
+	  },
+
+	  slopeOfLineBetweenBallAndSlime: function slopeOfLineBetweenBallAndSlime() {
+	    return (this.slime.y - this.ball.y) / (this.slime.x - this.ball.x);
+	  },
+
+	  interceptOfLineBetweenBallAndSlime: function interceptOfLineBetweenBallAndSlime(slope) {
+	    return this.ball.y - slope * this.ball.x;
+	  },
+
+	  solveForContactPointXValue: function solveForContactPointXValue(intercept, m) {
+	    return this.slime.x + this.slime.radius * ((this.ball.x - this.slime.x) / this.distanceBetweenBallAndSlime());
+	  }
+	};
 
 	module.exports = CollisionDetector;
 
 /***/ },
-/* 5 */
+/* 7 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	function NetCollisionDetector(net, ball) {
+	  this.net = net;
+	  this.ball = ball;
+	  this.isTouchingSideOfNetEvent = new Event("ballNetSideCollision");
+	  this.isTouchingTopOfNetEvent = new Event("ballNetTopCollision");
+	}
+
+	NetCollisionDetector.prototype = {
+	  detectCollision: function detectCollision(canvas) {
+	    if (this.isBallTouchingNet()) {
+	      this.emitBallEvent(canvas);
+	    }
+	  },
+
+	  isBallTouchingNet: function isBallTouchingNet() {
+	    return this.isBallTouchingTopOfNet() || this.isBallTouchingSideOfNet();
+	  },
+
+	  emitBallEvent: function emitBallEvent(canvas) {
+	    if (this.isBallTouchingSideOfNet()) {
+	      canvas.dispatchEvent(this.isTouchingSideOfNetEvent);
+	    } else if (this.isBallTouchingTopOfNet()) {
+	      canvas.dispatchEvent(this.isTouchingTopOfNetEvent);
+	    }
+	  },
+
+	  isBallTouchingTopOfNet: function isBallTouchingTopOfNet() {
+	    return this.isBallXWithinNetWidth() && this.isBallYDirectlyAboveNetHeight();
+	  },
+
+	  isBallXWithinNetWidth: function isBallXWithinNetWidth() {
+	    return this.ball.x >= this.net.x - this.ball.dx && this.ball.x <= this.net.x + this.net.width + this.ball.dx;
+	  },
+
+	  isBallYDirectlyAboveNetHeight: function isBallYDirectlyAboveNetHeight() {
+	    return this.ball.bottomEdge() >= this.net.y - this.ball.dx && this.ball.bottomEdge() <= this.net.y + this.ball.dx;
+	  },
+
+	  isBallTouchingSideOfNet: function isBallTouchingSideOfNet() {
+	    return this.isBallOnRightSideOfNet() || this.isBallOnLeftSideOfNet();
+	  },
+
+	  isBallOnRightSideOfNet: function isBallOnRightSideOfNet() {
+	    return this.ball.leftEdge() >= this.net.rightEdge() + this.ball.dx && this.ball.leftEdge() <= this.net.rightEdge() - this.ball.dx && this.isBallBelowNet();
+	  },
+
+	  isBallOnLeftSideOfNet: function isBallOnLeftSideOfNet() {
+	    return this.ball.rightEdge() <= this.net.x + this.ball.dx && this.ball.rightEdge() >= this.net.x - this.ball.dx && this.isBallBelowNet();
+	  },
+
+	  isBallBelowNet: function isBallBelowNet() {
+	    return this.ball.y > this.net.y;
+	  }
+	};
+
+	module.exports = NetCollisionDetector;
+
+/***/ },
+/* 8 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	function Scoreboard(canvas) {
+	  this.leftSlimeScore = 0;
+	  this.rightSlimeScore = 0;
+	  this.canvas = canvas;
+
+	  this.rightSlimeWinsEvent = new Event("rightSlimeWins");
+	  this.leftSlimeWinsEvent = new Event("leftSlimeWins");
+
+	  this.createEventListeners();
+	}
+
+	Scoreboard.prototype = {
+	  createEventListeners: function createEventListeners() {
+	    this.canvas.addEventListener("ballHitLeftSideOfFloor", (function (e) {
+	      this.increaseRightSlimeScore(e);
+	    }).bind(this), false);
+	    this.canvas.addEventListener("ballHitRightSideOfFloor", (function (e) {
+	      this.increaseLeftSlimeScore(e);
+	    }).bind(this), false);
+	  },
+
+	  increaseLeftSlimeScore: function increaseLeftSlimeScore() {
+	    this.leftSlimeScore++;
+	    this.emitGameOverEventIfWinner(this.leftSlimeScore, this.leftSlimeWinsEvent);
+	  },
+
+	  increaseRightSlimeScore: function increaseRightSlimeScore() {
+	    this.rightSlimeScore++;
+	    this.emitGameOverEventIfWinner(this.rightSlimeScore, this.rightSlimeWinsEvent);
+	  },
+
+	  emitGameOverEventIfWinner: function emitGameOverEventIfWinner(score, event) {
+	    if (this.isWinner(score)) {
+	      this.emitGameOverEvent(event);
+	    }
+	  },
+
+	  isWinner: function isWinner(score) {
+	    return score == 7;
+	  },
+
+	  emitGameOverEvent: function emitGameOverEvent(event) {
+	    this.canvas.dispatchEvent(event);
+	  },
+
+	  draw: function draw(context) {
+	    context.font = "18px sans-serif";
+	    context.textAlign = "center";
+	    context.fillStyle = "lightgrey";
+	    context.fillText(this.leftSlimeScore + " - " + this.rightSlimeScore, context.canvas.width / 2, 30);
+	  }
+	};
+
+	module.exports = Scoreboard;
+
+/***/ },
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(6);
+	var content = __webpack_require__(10);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(8)(content, {});
+	var update = __webpack_require__(12)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
 		// When the styles change, update the <style> tags
 		if(!content.locals) {
-			module.hot.accept("!!./../node_modules/css-loader/index.js!./canvas.css", function() {
-				var newContent = require("!!./../node_modules/css-loader/index.js!./canvas.css");
+			module.hot.accept("!!./../../node_modules/css-loader/index.js!./canvas.css", function() {
+				var newContent = require("!!./../../node_modules/css-loader/index.js!./canvas.css");
 				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 				update(newContent);
 			});
@@ -304,21 +898,21 @@
 	}
 
 /***/ },
-/* 6 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(7)();
+	exports = module.exports = __webpack_require__(11)();
 	// imports
 
 
 	// module
-	exports.push([module.id, "#game-div {\n  background-color: blue;\n  width: 750px;\n  height: 375px;\n  margin: auto;\n}\n", ""]);
+	exports.push([module.id, "#game-div {\n  background-color: blue;\n  width: 750px;\n  height: 375px;\n  margin: auto;\n}\n\n.key {\n  border-radius: 5px;\n  padding: 3px;\n  padding-left: 11px;\n  padding-right: 11px;\n}\n\n.pat-key {\n  background-color: deeppink;\n  color: white;\n  border: 1px solid deeppink;\n}\n\n.torie-key {\n  background-color: dodgerblue;\n  color: white;\n  border: 1px solid dodgerblue;\n}\n\n.pat {\n  color: deeppink;\n}\n\n.torie {\n  color: dodgerblue;\n}\n\n.slime {\n  color: darkslategrey;\n}\n", ""]);
 
 	// exports
 
 
 /***/ },
-/* 7 */
+/* 11 */
 /***/ function(module, exports) {
 
 	/*
@@ -374,7 +968,7 @@
 
 
 /***/ },
-/* 8 */
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*
