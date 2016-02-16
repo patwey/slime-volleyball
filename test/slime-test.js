@@ -1,6 +1,7 @@
 var assert = require('chai').assert;
 var Slime  = require('../lib/scripts/slime');
 var Net    = require('../lib/scripts/net');
+var sinon = require('sinon/pkg/sinon');
 
 describe("Slime", function() {
   function moveSlimeAwayFromWalls(slime) {
@@ -21,6 +22,19 @@ describe("Slime", function() {
   it("it knows its right edge", function() {
     var expectedEdge = this.slime.x + this.slime.radius;
     assert.strictEqual(this.slime.rightEdge(), expectedEdge);
+  });
+
+  it("can draw itself", function() {
+    var canvas = { addEventListener: function(){} };
+    var context = { fill: function(){}, beginPath: function(){}, arc: function(){} }
+
+    var spy = sinon.spy(context, "fill");
+
+    var slime = new Slime(100, 375, "blue", "keyA", "keyD", "keyW", context, canvas, true);
+
+    slime.draw();
+
+    assert(spy.called);
   });
 
   context("it is a slime on the left side", function() {

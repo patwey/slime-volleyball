@@ -1,5 +1,6 @@
 var assert = require('chai').assert;
 var Ball   = require('../lib/scripts/ball');
+var sinon = require('sinon/pkg/sinon');
 
 describe("Ball", function() {
   beforeEach(function() {
@@ -86,33 +87,16 @@ describe("Ball", function() {
     });
   });
 
-  context("it hits a slime", function() {
-    var ballSlimeCollisionEvent      = new Event("ballSlimeCollision");
-    var ballSlimeLeftCollisionEvent  = new Event("ballSlimeLeftCollision");
-    var ballSlimeRightCollisionEvent = new Event("ballSlimeRightCollision");
+  it("can draw itself", function() {
+    var canvas = { addEventListener: function(){} };
+    var context = { fill: function(){}, beginPath: function(){}, arc: function(){} }
 
-    xit("updates its trajectory correctly when it hits the left side of a slime", function (done) {
-      document.dispatchEvent(ballSlimeCollisionEvent);
-      document.dispatchEvent(ballSlimeLeftCollisionEvent);
+    var spy = sinon.spy(context, "fill");
 
-      setTimeout(function() {}, 1000);
+    var ball = new Ball(100, 100, canvas);
 
-      assert.strictEqual(this.ball.trajectorySlope, -200);
-      assert.strictEqual(this.ball.dx, -10);
-      assert.strictEqual(this.ball.velocity, -10);
-      done();
-    });
+    ball.draw(context);
 
-    xit("updates its trajectory correctly when it hits the right side of a slime", function (done) {
-      document.dispatchEvent(ballSlimeCollisionEvent);
-      document.dispatchEvent(ballSlimeRightCollisionEvent);
-
-      setTimeout(function() {}.bind(this), 1000);
-
-      assert.strictEqual(this.ball.trajectorySlope, 200);
-      assert.strictEqual(this.ball.dx, -10);
-      assert.strictEqual(this.ball.velocity, -10);
-      done();
-    });
-  })
+    assert(spy.calledOnce);
+  });
 });
