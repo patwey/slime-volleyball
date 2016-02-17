@@ -8,21 +8,21 @@ describe('CollisionDetector', function() {
     // Create slime and ball that aren't touching
     this.canvas = { width: 750, height: 375, addEventListener: function(){} };
     this.ball = new Ball(100, 70, this.canvas);
-    
+
     this.slime = new Slime(100, 300);
     this.collisionDetector = new CollisionDetector(this.slime, this.ball);
   });
 
   function moveBallToTouchTopOfSlime(ball, slime) {
     ball.y = slime.y - (slime.radius + ball.radius);
-  };
+  }
 
   function separateBallAndSlime(ball, slime){
     ball.x = 100;
     ball.y = 100;
     slime.x = 100;
     slime.y = 300;
-  };
+  }
 
   it('knows if collision has occured', function () {
     separateBallAndSlime(this.ball, this.slime);
@@ -62,12 +62,12 @@ describe('CollisionDetector', function() {
   context('ball hits the side of slime', function() {
     function moveBallToTouchRightSideOfSlime(ball, slime) {
       ball.x = 170; ball.y = 328;
-      slime.x = 150, slime.y = 375;
+      slime.x = 150; slime.y = 375;
     }
 
     function moveBallToTouchLeftSideOfSlime(ball, slime) {
       ball.x = 130; ball.y = 328;
-      slime.x = 150, slime.y = 375;
+      slime.x = 150; slime.y = 375;
     }
 
     it('knows the point at which the ball and slime have collided', function() {

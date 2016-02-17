@@ -4,7 +4,7 @@ var Net    = require('../lib/scripts/net');
 
 describe("Net", function() {
   it("can draw itself", function() {
-    var context = { fillRect: function(){} }
+    var context = { fillRect: function(){} };
 
     var spy = sinon.spy(context, "fillRect");
     var net = new Net(750, 375);
@@ -13,4 +13,4 @@ describe("Net", function() {
 
     assert(spy.called);
   });
-})
+});
