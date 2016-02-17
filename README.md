@@ -2,7 +2,7 @@
 
 [Live Application](http://patwey.github.io/slime-volleyball/)
 
-A revival of the classic flash game (of the same name) using Canvas and Javascript.
+A revival of the two player version of the classic flash game (of the same name) using Canvas and Javascript.
 
 ![](http://g.recordit.co/lNaoN5RmN8.gif)
 
