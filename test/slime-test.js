@@ -26,7 +26,7 @@ describe("Slime", function() {
 
   it("can draw itself", function() {
     var canvas = { addEventListener: function(){} };
-    var context = { fill: function(){}, beginPath: function(){}, arc: function(){} }
+    var context = { fill: function(){}, beginPath: function(){}, arc: function(){} };
 
     var spy = sinon.spy(context, "fill");
 
@@ -52,8 +52,8 @@ describe("Slime", function() {
 
     beforeEach(function () {
       var canvas = { width: 750, height: 375 };
-      this.leftSlime = new Slime(100, 375, "blue", "keyA", "keyD", "keyW", "", canvas, true)
-    })
+      this.leftSlime = new Slime(100, 375, "blue", "keyA", "keyD", "keyW", "", canvas, true);
+    });
 
     it("knows if its touching the left wall", function() {
       moveSlimeToLeftCenter(this.leftSlime);
@@ -91,11 +91,11 @@ describe("Slime", function() {
 
     beforeEach(function () {
       var canvas = { width: 750, height: 375 };
-      this.rightSlime = new Slime(600, 375, "blue", "keyA", "keyD", "keyW", "", canvas, false)
-    })
+      this.rightSlime = new Slime(600, 375, "blue", "keyA", "keyD", "keyW", "", canvas, false);
+    });
 
     it("knows if its touching the right wall", function() {
-      moveSlimeToRightCenter(this.rightSlime)
+      moveSlimeToRightCenter(this.rightSlime);
 
       assert.isFalse(this.rightSlime.isTouchingRightWall());
 
@@ -154,6 +154,6 @@ describe("Slime", function() {
       this.slime.move();
 
       assert.strictEqual(this.slime.y, oldY + this.slime.initialJumpForce);
-    })
+    });
   });
 });

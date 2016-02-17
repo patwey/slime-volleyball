@@ -11,11 +11,11 @@ describe("Ball", function() {
 
   function moveBallToTouchRightWall(ball) {
     ball.x = (ball.canvas.width - ball.radius);
-  };
+  }
 
   function moveBallToTouchLeftWall(ball) {
     ball.x = (0 + ball.radius);
-  };
+  }
 
   function moveBallToCenterOfCanvas(ball) {
     ball.x = (ball.canvas.width / 2);
@@ -55,7 +55,7 @@ describe("Ball", function() {
       this.ball.move();
 
       assert.strictEqual(this.ball.dx, -oldDx);
-    })
+    });
   });
 
   context("it hits the floor", function() {
@@ -89,7 +89,7 @@ describe("Ball", function() {
 
   it("can draw itself", function() {
     var canvas = { addEventListener: function(){} };
-    var context = { fill: function(){}, beginPath: function(){}, arc: function(){} }
+    var context = { fill: function(){}, beginPath: function(){}, arc: function(){} };
 
     var spy = sinon.spy(context, "fill");
 

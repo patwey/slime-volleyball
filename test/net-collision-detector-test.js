@@ -59,5 +59,5 @@ describe("Net Collision Detector", function(){
 
       assert.isTrue(this.netCollisionDetector.isBallTouchingTopOfNet());
     });
-  })
-})
+  });
+});
