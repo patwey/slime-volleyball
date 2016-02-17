@@ -1,31 +1,13 @@
-# Game Time Starter Kit
+# Slime Volleyball
 
-To install the dependencies:
+[Live Application](http://patwey.github.io/slime-volleyball/)
 
-```
-npm install
-```
+A revival of the classic flash game (of the same name) using Canvas and Javascript.
 
-To fire up a development server:
+![](http://g.recordit.co/lNaoN5RmN8.gif)
 
-```
-npm start
-```
+### Playing Slime Volleyball Locally
 
-Once the server is running, you can visit:
-
-* `http://localhost:8080/webpack-dev-server/` to run your application.
-* `http://localhost:8080/webpack-dev-server/test.html` to run your test suite in the browser.
-
-To build the static files:
-
-```js
-npm run build
-```
-
-
-To run tests in Node:
-
-```js
-npm test
-```
+* Clone this repo
+* Run `npm install` to install dependancies
+* Run `npm start` and visit `http://localhost:8080`
