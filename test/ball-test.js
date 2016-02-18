@@ -11,10 +11,12 @@ describe("Ball", function() {
 
   function moveBallToTouchRightWall(ball) {
     ball.x = (ball.canvas.width - ball.radius);
+    ball.dx = 10;
   }
 
   function moveBallToTouchLeftWall(ball) {
     ball.x = (0 + ball.radius);
+    ball.dx = -10;
   }
 
   function moveBallToCenterOfCanvas(ball) {
