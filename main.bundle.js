@@ -146,6 +146,7 @@
 	    }).bind(this));
 
 	    collisionDetectors.push(new netCollisionDetector(this.net, this.ball));
+
 	    return collisionDetectors;
 	  },
 
@@ -157,16 +158,18 @@
 
 	  resetPoint: function resetPoint(side) {
 	    this.slimes = this.createSlimes(this.context, this.canvas);
-	    var ballX = 0;
-
-	    if (side == "left") {
-	      ballX = this.slimes[1].x;
-	    } else if (side == "right") {
-	      ballX = this.slimes[0].x;
-	    }
+	    var ballX = this.getBallStartPoint(side);
 
 	    this.ball = new Ball(ballX, 250, this.canvas);
 	    this.collisionDetectors = this.createCollisionDetectors();
+	  },
+
+	  getBallStartPoint: function getBallStartPoint(side) {
+	    if (side == "left") {
+	      return this.slimes[1].x;
+	    } else {
+	      return this.slimes[0].x;
+	    }
 	  },
 
 	  setUpNewGame: function setUpNewGame() {
@@ -186,7 +189,7 @@
 
 	    if (side == "right") {
 	      this.winner = "SlimeTorie";
-	    } else if (side == "left") {
+	    } else {
 	      this.winner = "SlimePat";
 	    }
 	  },
@@ -209,7 +212,7 @@
 	    this.clearScreen().setMessageFont();
 	    this.context.fillText(this.winner + " wins!", this.canvas.width / 2, this.canvas.height / 2);
 
-	    this.context.font = "18px sans-serif";
+	    this.setSubtextFont();
 	    this.context.fillText("Press space to play again", this.canvas.width / 2, this.canvas.height / 2 + 40);
 
 	    this.addListenerForStartKey();
@@ -234,6 +237,10 @@
 	    this.context.font = "48px sans-serif";
 	    this.context.textAlign = "center";
 	    this.context.fillStyle = "lightgrey";
+	  },
+
+	  setSubtextFont: function setSubtextFont() {
+	    this.context.font = "18px sans-serif";
 	  },
 
 	  clearScreen: function clearScreen() {
@@ -286,6 +293,7 @@
 	Slime.prototype = {
 	  draw: function draw() {
 	    this.drawBody();
+
 	    if (this.isOnLeftSide) {
 	      this.drawLeftEye();
 	    } else if (!this.isOnLeftSide) {
@@ -295,45 +303,40 @@
 
 	  drawBody: function drawBody() {
 	    this.context.fillStyle = this.color;
-
-	    this.context.beginPath();
-	    this.context.arc(this.x, this.y, this.radius, 0, Math.PI, true);
-	    this.context.fill();
+	    this.drawSemiCircle(this.x, this.y, this.radius);
 	  },
 
 	  drawLeftEye: function drawLeftEye() {
 	    this.context.fillStyle = "white";
-
-	    this.context.beginPath();
-	    this.context.arc(this.x + 18, this.y - 20, 9, 0, Math.PI * 2, true);
-	    this.context.fill();
-
+	    this.drawCircle(this.x + 18, this.y - 20, 9);
 	    this.drawLeftPupil();
 	  },
 
 	  drawRightEye: function drawRightEye() {
 	    this.context.fillStyle = "white";
-
-	    this.context.beginPath();
-	    this.context.arc(this.x - 18, this.y - 20, 9, 0, Math.PI * 2, true);
-	    this.context.fill();
-
+	    this.drawCircle(this.x - 18, this.y - 20, 9);
 	    this.drawRightPupil();
 	  },
 
 	  drawLeftPupil: function drawLeftPupil() {
 	    this.context.fillStyle = "black";
-
-	    this.context.beginPath();
-	    this.context.arc(this.x + 22, this.y - 20, 4, 0, Math.PI * 2, true);
-	    this.context.fill();
+	    this.drawCircle(this.x + 22, this.y - 20, 4);
 	  },
 
 	  drawRightPupil: function drawRightPupil() {
 	    this.context.fillStyle = "black";
+	    this.drawCircle(this.x - 22, this.y - 20, 4);
+	  },
 
+	  drawCircle: function drawCircle(x, y, radius) {
 	    this.context.beginPath();
-	    this.context.arc(this.x - 22, this.y - 20, 4, 0, Math.PI * 2, true);
+	    this.context.arc(x, y, radius, 0, Math.PI * 2, true);
+	    this.context.fill();
+	  },
+
+	  drawSemiCircle: function drawSemiCircle(x, y, radius) {
+	    this.context.beginPath();
+	    this.context.arc(x, y, radius, 0, Math.PI, true);
 	    this.context.fill();
 	  },
 
@@ -487,16 +490,19 @@
 	  this.trajectorySlope = 1;
 	  this.trajectoryIntercept = y;
 
+	  this.createEvents();
 	  this.createEventListeners();
-
-	  this.hitLeftSideOfFloor = new Event("ballHitLeftSideOfFloor");
-	  this.hitRightSideOfFloor = new Event("ballHitRightSideOfFloor");
 	}
 
 	Ball.prototype = {
+	  createEvents: function createEvents() {
+	    this.hitLeftSideOfFloor = new Event("ballHitLeftSideOfFloor");
+	    this.hitRightSideOfFloor = new Event("ballHitRightSideOfFloor");
+	  },
+
 	  createEventListeners: function createEventListeners() {
 	    this.canvas.addEventListener("ballSlimeCollision", (function (e) {
-	      this.redirect(e.side, e.contactPoint, e.slimeForce);
+	      this.redirect(e);
 	    }).bind(this), false);
 	    this.canvas.addEventListener("ballNetSideCollision", (function (e) {
 	      this.reverseDirection();
@@ -516,13 +522,19 @@
 
 	  move: function move() {
 	    this.stopIfOnFloor();
+	    this.updateTrajectory();
+	    this.changeDirectionIfOnWall();
+
+	    return this;
+	  },
+
+	  updateTrajectory: function updateTrajectory() {
 	    this.setTrajectoryInterceptToY();
+
 	    this.x += this.dx;
 	    this.y += this.trajectory(this.trajectorySlope, this.trajectoryIntercept) + this.velocity;
 
 	    this.velocity += this.dy;
-	    this.changeDirectionIfOnWall();
-	    return this;
 	  },
 
 	  trajectory: function trajectory(m, b) {
@@ -537,6 +549,10 @@
 
 	  updateVelocity: function updateVelocity(velocity) {
 	    this.velocity = velocity;
+	  },
+
+	  updateDy: function updateDy(dy) {
+	    this.dy = dy;
 	  },
 
 	  updateDx: function updateDx(dx) {
@@ -581,9 +597,9 @@
 	  },
 
 	  stopBall: function stopBall() {
-	    this.dx = 0;
-	    this.dy = 0;
-	    this.velocity = 0;
+	    this.updateDx(0);
+	    this.updateDy(0);
+	    this.updateVelocity(0);
 	  },
 
 	  isTouchingFloor: function isTouchingFloor() {
@@ -596,13 +612,15 @@
 	    } else if (this.isOnRightSide()) {
 	      this.canvas.dispatchEvent(this.hitRightSideOfFloor);
 	    }
+
 	    this.nullifyEvents();
 	  },
 
 	  nullifyEvents: function nullifyEvents() {
-	    var event = new Event("null");
-	    this.hitLeftSideOfFloor = event;
-	    this.hitRightSideOfFloor = event;
+	    var nullEvent = new Event("null");
+
+	    this.hitLeftSideOfFloor = nullEvent;
+	    this.hitRightSideOfFloor = nullEvent;
 	  },
 
 	  isOnLeftSide: function isOnLeftSide() {
@@ -613,12 +631,13 @@
 	    return this.x > this.canvas.width / 2;
 	  },
 
-	  redirect: function redirect(side, contactPoint, slimeForce) {
+	  redirect: function redirect(e) {
 	    this.resetVelocity();
-	    if (side === "left") {
-	      this.redirectLeft(contactPoint, slimeForce);
-	    } else if (side === "right") {
-	      this.redirectRight(contactPoint, slimeForce);
+
+	    if (e.side === "left") {
+	      this.redirectLeft(e.contactPoint, e.slimeForce);
+	    } else if (e.side === "right") {
+	      this.redirectRight(e.contactPoint, e.slimeForce);
 	    }
 	  },
 
@@ -675,10 +694,6 @@
 
 	  rightEdge: function rightEdge() {
 	    return this.x + this.width;
-	  },
-
-	  lefttEdge: function lefttEdge() {
-	    return this.x;
 	  }
 	};
 
@@ -710,9 +725,13 @@
 	      this.ballSlimeCollisionEvent.side = "left";
 	    }
 
+	    this.setCollisionEventData();
+	    canvas.dispatchEvent(this.ballSlimeCollisionEvent);
+	  },
+
+	  setCollisionEventData: function setCollisionEventData() {
 	    this.ballSlimeCollisionEvent.contactPoint = this.contactPointXValue() - this.slime.x;
 	    this.ballSlimeCollisionEvent.slimeForce = this.slime.dy;
-	    canvas.dispatchEvent(this.ballSlimeCollisionEvent);
 	  },
 
 	  isBallTouchingRightSideOfSlime: function isBallTouchingRightSideOfSlime() {
@@ -724,13 +743,7 @@
 	  },
 
 	  isBallTouchingSlime: function isBallTouchingSlime() {
-	    var distance = this.distanceBetweenBallAndSlime();
-
-	    if (distance <= this.slime.radius + this.ball.radius) {
-	      return true;
-	    } else {
-	      return false;
-	    }
+	    return this.distanceBetweenBallAndSlime() <= this.slime.radius + this.ball.radius;
 	  },
 
 	  distanceBetweenBallAndSlime: function distanceBetweenBallAndSlime() {
@@ -741,7 +754,7 @@
 	  },
 
 	  contactPointXValue: function contactPointXValue() {
-	    if (this.slime.x == this.ball.x) {
+	    if (this.isBallDirectlyOverSlime()) {
 	      return this.slime.x;
 	    } else {
 	      var slope = this.slopeOfLineBetweenBallAndSlime();
@@ -749,6 +762,10 @@
 
 	      return this.solveForContactPointXValue(intercept, slope);
 	    }
+	  },
+
+	  isBallDirectlyOverSlime: function isBallDirectlyOverSlime() {
+	    return this.slime.x === this.ball.x;
 	  },
 
 	  slopeOfLineBetweenBallAndSlime: function slopeOfLineBetweenBallAndSlime() {
@@ -775,11 +792,15 @@
 	function NetCollisionDetector(net, ball) {
 	  this.net = net;
 	  this.ball = ball;
-	  this.isTouchingSideOfNetEvent = new Event("ballNetSideCollision");
-	  this.isTouchingTopOfNetEvent = new Event("ballNetTopCollision");
+	  this.createEvents();
 	}
 
 	NetCollisionDetector.prototype = {
+	  createEvents: function createEvents() {
+	    this.isTouchingSideOfNetEvent = new Event("ballNetSideCollision");
+	    this.isTouchingTopOfNetEvent = new Event("ballNetTopCollision");
+	  },
+
 	  detectCollision: function detectCollision(canvas) {
 	    if (this.isBallTouchingNet()) {
 	      this.emitBallEvent(canvas);
@@ -807,7 +828,7 @@
 	  },
 
 	  isBallYDirectlyAboveNetHeight: function isBallYDirectlyAboveNetHeight() {
-	    return this.ball.bottomEdge() >= this.net.y - this.ball.dx && this.ball.bottomEdge() <= this.net.y + this.ball.dx;
+	    return this.ball.bottomEdge() >= this.net.y - this.ball.radius && this.ball.bottomEdge() <= this.net.y + this.ball.radius;
 	  },
 
 	  isBallTouchingSideOfNet: function isBallTouchingSideOfNet() {
@@ -838,15 +859,20 @@
 	function Scoreboard(canvas) {
 	  this.leftSlimeScore = 0;
 	  this.rightSlimeScore = 0;
+	  this.winningScore = 7;
+
 	  this.canvas = canvas;
 
-	  this.rightSlimeWinsEvent = new Event("rightSlimeWins");
-	  this.leftSlimeWinsEvent = new Event("leftSlimeWins");
-
+	  this.createEvents();
 	  this.createEventListeners();
 	}
 
 	Scoreboard.prototype = {
+	  createEvents: function createEvents() {
+	    this.rightSlimeWinsEvent = new Event("rightSlimeWins");
+	    this.leftSlimeWinsEvent = new Event("leftSlimeWins");
+	  },
+
 	  createEventListeners: function createEventListeners() {
 	    this.canvas.addEventListener("ballHitLeftSideOfFloor", (function (e) {
 	      this.increaseRightSlimeScore(e);
@@ -873,7 +899,7 @@
 	  },
 
 	  isWinner: function isWinner(score) {
-	    return score == 7;
+	    return score == this.winningScore;
 	  },
 
 	  emitGameOverEvent: function emitGameOverEvent(event) {
@@ -881,10 +907,22 @@
 	  },
 
 	  draw: function draw(context) {
+	    this.setScoreboardFont(context);
+	    this.drawScoreboard(context);
+	  },
+
+	  setScoreboardFont: function setScoreboardFont(context) {
 	    context.font = "18px sans-serif";
 	    context.textAlign = "center";
 	    context.fillStyle = "lightgrey";
-	    context.fillText(this.leftSlimeScore + " - " + this.rightSlimeScore, context.canvas.width / 2, 30);
+	  },
+
+	  drawScoreboard: function drawScoreboard(context) {
+	    context.fillText(this.scoreboardDisplayFormat(), context.canvas.width / 2, 30);
+	  },
+
+	  scoreboardDisplayFormat: function scoreboardDisplayFormat() {
+	    return this.leftSlimeScore + " - " + this.rightSlimeScore;
 	  }
 	};
 
