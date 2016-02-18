@@ -238,7 +238,7 @@
 	}
 
 	function onKeyDown(e) {
-	  var keyPressed = e.code;
+	  var keyPressed = e.keyCode;
 
 	  switch (keyPressed) {
 	    case this.leftKeyCode:
@@ -254,7 +254,7 @@
 	}
 
 	function onKeyUp(e) {
-	  var keyReleased = e.code;
+	  var keyReleased = e.keyCode;
 
 	  switch (keyReleased) {
 	    case this.leftKeyCode:

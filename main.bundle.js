@@ -134,8 +134,8 @@
 	  createSlimes: function createSlimes() {
 	    var slimes = [];
 
-	    slimes.push(new Slime(150, 375, "deeppink", "KeyA", "KeyD", "KeyW", this.context, this.canvas, true));
-	    slimes.push(new Slime(600, 375, "dodgerblue", "ArrowLeft", "ArrowRight", "ArrowUp", this.context, this.canvas, false));
+	    slimes.push(new Slime(150, 375, "deeppink", 65, 68, 87, this.context, this.canvas, true));
+	    slimes.push(new Slime(600, 375, "dodgerblue", 37, 39, 38, this.context, this.canvas, false));
 
 	    return slimes;
 	  },
@@ -226,7 +226,7 @@
 	  },
 
 	  startGame: function startGame(e) {
-	    if (e.code === "Space") {
+	    if (e.keyCode === 32) {
 	      e.view.removeEventListener("keydown", this.newGameHandler, false);
 	      this.setUpNewGame();
 	      this.start();
@@ -435,7 +435,7 @@
 	}
 
 	function onKeyDown(e) {
-	  var keyPressed = e.code;
+	  var keyPressed = e.keyCode;
 
 	  switch (keyPressed) {
 	    case this.leftKeyCode:
@@ -451,7 +451,7 @@
 	}
 
 	function onKeyUp(e) {
-	  var keyReleased = e.code;
+	  var keyReleased = e.keyCode;
 
 	  switch (keyReleased) {
 	    case this.leftKeyCode:
