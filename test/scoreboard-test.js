@@ -3,7 +3,7 @@ var Scoreboard  = require('../lib/scripts/scoreboard');
 
 describe("Scoreboard", function () {
   beforeEach(function () {
-    var canvas = { width: 750, height: 375, addEventListener: function () {}, dispatchEvent: function () {} }
+    var canvas = { width: 750, height: 375, addEventListener: function () {}, dispatchEvent: function () {} };
     this.scoreboard = new Scoreboard(canvas);
   });
 

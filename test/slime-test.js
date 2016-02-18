@@ -1,6 +1,7 @@
 var assert = require('chai').assert;
 var Slime  = require('../lib/scripts/slime');
 var Net    = require('../lib/scripts/net');
+var sinon = require('sinon/pkg/sinon');
 
 describe("Slime", function() {
   function moveSlimeAwayFromWalls(slime) {
@@ -23,6 +24,19 @@ describe("Slime", function() {
     assert.strictEqual(this.slime.rightEdge(), expectedEdge);
   });
 
+  it("can draw itself", function() {
+    var canvas = { addEventListener: function(){} };
+    var context = { fill: function(){}, beginPath: function(){}, arc: function(){} };
+
+    var spy = sinon.spy(context, "fill");
+
+    var slime = new Slime(100, 375, "blue", "keyA", "keyD", "keyW", context, canvas, true);
+
+    slime.draw();
+
+    assert(spy.called);
+  });
+
   context("it is a slime on the left side", function() {
     function moveSlimeToLeftWall(slime) {
       slime.x = 0 + slime.radius;
@@ -38,8 +52,8 @@ describe("Slime", function() {
 
     beforeEach(function () {
       var canvas = { width: 750, height: 375 };
-      this.leftSlime = new Slime(100, 375, "blue", "keyA", "keyD", "keyW", "", canvas, true)
-    })
+      this.leftSlime = new Slime(100, 375, "blue", "keyA", "keyD", "keyW", "", canvas, true);
+    });
 
     it("knows if its touching the left wall", function() {
       moveSlimeToLeftCenter(this.leftSlime);
@@ -77,11 +91,11 @@ describe("Slime", function() {
 
     beforeEach(function () {
       var canvas = { width: 750, height: 375 };
-      this.rightSlime = new Slime(600, 375, "blue", "keyA", "keyD", "keyW", "", canvas, false)
-    })
+      this.rightSlime = new Slime(600, 375, "blue", "keyA", "keyD", "keyW", "", canvas, false);
+    });
 
     it("knows if its touching the right wall", function() {
-      moveSlimeToRightCenter(this.rightSlime)
+      moveSlimeToRightCenter(this.rightSlime);
 
       assert.isFalse(this.rightSlime.isTouchingRightWall());
 
@@ -140,6 +154,6 @@ describe("Slime", function() {
       this.slime.move();
 
       assert.strictEqual(this.slime.y, oldY + this.slime.initialJumpForce);
-    })
+    });
   });
 });
