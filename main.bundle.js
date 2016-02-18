@@ -50,7 +50,7 @@
 	__webpack_require__(9);
 
 	var game = new Game();
-	game.start();
+	game.askUserToStartGame();
 
 /***/ },
 /* 1 */
@@ -68,16 +68,13 @@
 	function Game() {
 	  this.setCanvasAndContext();
 	  this.setUpNewGame();
-	};
+	}
 
 	Game.prototype = {
 	  start: function start() {
 	    requestAnimationFrame((function gameLoop() {
-	      this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
-	      this.move();
-	      this.draw();
-	      this.detectCollisions();
+	      this.clearScreen();
+	      this.move().draw().detectCollisions();
 
 	      if (this.gameOver) {
 	        this.endGame();
@@ -115,14 +112,17 @@
 	    this.ball.draw(this.context);
 	    this.net.draw(this.context);
 	    this.scoreboard.draw(this.context);
+
+	    return this;
 	  },
 
 	  move: function move() {
 	    this.slimes.forEach(function (slime) {
 	      slime.move();
 	    });
-
 	    this.ball.move();
+
+	    return this;
 	  },
 
 	  detectCollisions: function detectCollisions() {
@@ -157,11 +157,12 @@
 
 	  resetPoint: function resetPoint(side) {
 	    this.slimes = this.createSlimes(this.context, this.canvas);
+	    var ballX = 0;
 
 	    if (side == "left") {
-	      var ballX = this.slimes[1].x;
+	      ballX = this.slimes[1].x;
 	    } else if (side == "right") {
-	      var ballX = this.slimes[0].x;
+	      ballX = this.slimes[0].x;
 	    }
 
 	    this.ball = new Ball(ballX, 250, this.canvas);
@@ -205,27 +206,45 @@
 	  },
 
 	  drawGameOverScreen: function drawGameOverScreen() {
-	    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-	    this.context.font = "48px sans-serif";
-	    this.context.textAlign = "center";
-	    this.context.fillStyle = "lightgrey";
+	    this.clearScreen().setMessageFont();
 	    this.context.fillText(this.winner + " wins!", this.canvas.width / 2, this.canvas.height / 2);
 
 	    this.context.font = "18px sans-serif";
 	    this.context.fillText("Press space to play again", this.canvas.width / 2, this.canvas.height / 2 + 40);
 
+	    this.addListenerForStartKey();
+	  },
+
+	  addListenerForStartKey: function addListenerForStartKey() {
 	    this.newGameHandler = (function (e) {
-	      this.restartGame(e);
+	      this.startGame(e);
 	    }).bind(this);
 	    window.addEventListener("keydown", this.newGameHandler, false);
 	  },
 
-	  restartGame: function restartGame(e) {
+	  startGame: function startGame(e) {
 	    if (e.code === "Space") {
 	      e.view.removeEventListener("keydown", this.newGameHandler, false);
 	      this.setUpNewGame();
 	      this.start();
 	    }
+	  },
+
+	  setMessageFont: function setMessageFont() {
+	    this.context.font = "48px sans-serif";
+	    this.context.textAlign = "center";
+	    this.context.fillStyle = "lightgrey";
+	  },
+
+	  clearScreen: function clearScreen() {
+	    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+	    return this;
+	  },
+
+	  askUserToStartGame: function askUserToStartGame() {
+	    this.clearScreen().setMessageFont();
+	    this.context.fillText("Press space to start!", this.canvas.width / 2, this.canvas.height / 2 + 10);
+	    this.addListenerForStartKey();
 	  }
 	};
 
@@ -539,7 +558,7 @@
 	  },
 
 	  reverseDirection: function reverseDirection() {
-	    this.dx = -this.dx;
+	    this.updateDx(-this.dx);
 	  },
 
 	  isTouchingWall: function isTouchingWall() {
@@ -547,11 +566,11 @@
 	  },
 
 	  isTouchingLeftWall: function isTouchingLeftWall() {
-	    return this.x - this.radius <= 0;
+	    return this.leftEdge() + this.dx <= 0;
 	  },
 
 	  isTouchingRightWall: function isTouchingRightWall() {
-	    return this.x + this.radius >= this.canvas.width;
+	    return this.rightEdge() + this.dx >= this.canvas.width;
 	  },
 
 	  stopIfOnFloor: function stopIfOnFloor() {
@@ -568,7 +587,7 @@
 	  },
 
 	  isTouchingFloor: function isTouchingFloor() {
-	    return this.y + this.radius >= this.canvas.height;
+	    return this.bottomEdge() >= this.canvas.height;
 	  },
 
 	  emitFloorContactEvent: function emitFloorContactEvent() {
@@ -784,7 +803,7 @@
 	  },
 
 	  isBallXWithinNetWidth: function isBallXWithinNetWidth() {
-	    return this.ball.x >= this.net.x - this.ball.dx && this.ball.x <= this.net.x + this.net.width + this.ball.dx;
+	    return this.ball.x >= this.net.x - Math.abs(this.ball.dx) && this.ball.x <= this.net.x + this.net.width + Math.abs(this.ball.dx);
 	  },
 
 	  isBallYDirectlyAboveNetHeight: function isBallYDirectlyAboveNetHeight() {
@@ -804,7 +823,7 @@
 	  },
 
 	  isBallBelowNet: function isBallBelowNet() {
-	    return this.ball.y > this.net.y;
+	    return this.ball.bottomEdge() > this.net.y;
 	  }
 	};
 
